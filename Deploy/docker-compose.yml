@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  web:
+    image: nginx:latest
+    container_name: tissu-master
+    restart: always
+    ports:
+      - "8081:80"  # Expose le site sur le port 80
+    volumes:
+      - /home/joe/Tissu-Master/tissu-master/build:/usr/share/nginx/html  # Dossier contenant ton site
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro  # Fichier de config Nginx personnalisé
+    environment:
+      - NGINX_HOST=mon-site.com
+      - NGINX_PORT=80
