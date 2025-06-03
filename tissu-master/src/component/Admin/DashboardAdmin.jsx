@@ -115,6 +115,10 @@ function DashboardAdmin() {
                         <ListItemIcon><Storefront /></ListItemIcon>
                         <ListItemText>Boutiques</ListItemText>
                     </ListItem>
+                      <ListItem button component="a" href="/admin/statistiques">
+                        <ListItemIcon><Storefront /></ListItemIcon>
+                        <ListItemText>Statistiques</ListItemText>
+                    </ListItem>
                 </List>
             </Drawer>
             <Container maxWidth="md" sx={{ textAlign: 'center', mt: 8 }}>

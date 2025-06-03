@@ -8,6 +8,8 @@ import AdminBarcodes from './component/SAdmin/codeBarre';
 import Boutiques from "./component/Admin/Boutiques";
 import { Client, Account } from 'appwrite';
 import appwriteConfig from './config/appwriteConfig';
+import DashboardSuperAdmin from './component/SAdmin/DashboardSuperAdmin';
+import StatistiquesAdmin from './component/Admin/Statistiques';
 
 
 // Définir client et account ici
@@ -29,6 +31,8 @@ function App() {
           element={<DashboardUser account={account} />}
         />
         <Route path="/admin" element={<DashboardAdmin account={account} />} />
+        <Route path="/superadmin" element={<DashboardSuperAdmin />} />
+        <Route path="/admin/statistiques" element={<StatistiquesAdmin />} />
         <Route path='/admin/boutiques' element={<Boutiques account={account} />} />
         <Route path="/admin/codebarres" element={<AdminBarcodes />} />
         {/* Supprimer l'ancienne route /dashboard */}
