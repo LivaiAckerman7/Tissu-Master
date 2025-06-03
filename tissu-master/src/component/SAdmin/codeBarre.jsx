@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useRef } from 'react';
-import QRCode from 'qrcode';
+import React, { useEffect, useState } from "react";
+import QRCode from "qrcode";
 import {
   Container,
   Typography,
@@ -7,26 +7,37 @@ import {
   List,
   ListItem,
   ListItemText,
-} from '@mui/material';
+  Divider,
+} from "@mui/material";
 
 const AdminBarcodes = () => {
-  const [produits, setProduits] = useState([]);
+  const [groupedProduits, setGroupedProduits] = useState({});
 
   useEffect(() => {
     const fetchTissus = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/tissus');
+        const response = await fetch("http://localhost:5000/api/tissus");
         const data = await response.json();
 
-        const produitsAvecRefs = data.map(p => ({
+        // Ajout des refs et urls QR pour chaque produit
+        const produitsAvecRefs = data.map((p) => ({
           ...p,
           ref: React.createRef(),
-          qrCodeUrl: `${window.location.origin}/user/${p.id}` // URL complète
+          qrCodeUrl: `${window.location.origin}/user/${p.id}`,
         }));
 
-        setProduits(produitsAvecRefs);
+        // Groupement par boutique_nom
+        const groupes = {};
+        for (const produit of produitsAvecRefs) {
+          if (!groupes[produit.boutique_nom]) {
+            groupes[produit.boutique_nom] = [];
+          }
+          groupes[produit.boutique_nom].push(produit);
+        }
+
+        setGroupedProduits(groupes);
       } catch (error) {
-        console.error('Échec de la récupération des tissus', error);
+        console.error("Échec de la récupération des tissus", error);
       }
     };
 
@@ -35,34 +46,32 @@ const AdminBarcodes = () => {
 
   useEffect(() => {
     const generateQRCodes = async () => {
-      for (const produit of produits) {
-        if (produit.ref.current) {
-          try {
-            await QRCode.toCanvas(
-              produit.ref.current,
-              produit.qrCodeUrl,
-              {
+      for (const boutique in groupedProduits) {
+        for (const produit of groupedProduits[boutique]) {
+          if (produit.ref.current) {
+            try {
+              await QRCode.toCanvas(produit.ref.current, produit.qrCodeUrl, {
                 width: 150,
                 margin: 1,
                 color: {
-                  dark: '#000000',
-                  light: '#ffffff'
-                }
-              }
-            );
-          } catch (err) {
-            console.error('Erreur génération QR code', err);
+                  dark: "#000000",
+                  light: "#ffffff",
+                },
+              });
+            } catch (err) {
+              console.error("Erreur génération QR code", err);
+            }
           }
         }
       }
     };
 
     generateQRCodes();
-  }, [produits]);
+  }, [groupedProduits]);
 
-  const printLabelPage = produit => {
+  const printLabelPage = (produit) => {
     const qrCodeCanvas = produit.ref.current;
-    const qrCodeImage = qrCodeCanvas.toDataURL('image/png');
+    const qrCodeImage = qrCodeCanvas.toDataURL("image/png");
 
     const labelContent = `
       <html>
@@ -102,7 +111,7 @@ const AdminBarcodes = () => {
       </html>
     `;
 
-    const printWindow = window.open('', '_blank');
+    const printWindow = window.open("", "_blank");
     printWindow.document.write(labelContent);
     printWindow.document.close();
   };
@@ -110,27 +119,36 @@ const AdminBarcodes = () => {
   return (
     <Container maxWidth="md">
       <Typography variant="h4" gutterBottom>
-        Génération de codes QR pour les tissus
+        Codes QR par boutique
       </Typography>
-      <List>
-        {produits.map((produit, index) => (
-          <ListItem key={index} divider>
-            <ListItemText
-              primary={produit.nom}
-              secondary={`Boutique: ${produit.boutique_nom}`}
-            />
-            <canvas ref={produit.ref}></canvas>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => printLabelPage(produit)}
-              sx={{ ml: 2 }}
-            >
-              Imprimer Étiquette
-            </Button>
-          </ListItem>
-        ))}
-      </List>
+
+      {Object.entries(groupedProduits).map(([boutique, produits]) => (
+        <div key={boutique}>
+          <Typography variant="h5" gutterBottom sx={{ mt: 4 }}>
+            Boutique : {boutique}
+          </Typography>
+          <List>
+            {produits.map((produit, index) => (
+              <ListItem key={index} divider>
+                <ListItemText
+                  primary={produit.nom}
+                  secondary={`ID: ${produit.id}`}
+                />
+                <canvas ref={produit.ref}></canvas>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => printLabelPage(produit)}
+                  sx={{ ml: 2 }}
+                >
+                  Imprimer Étiquette
+                </Button>
+              </ListItem>
+            ))}
+          </List>
+          <Divider />
+        </div>
+      ))}
     </Container>
   );
 };
