@@ -23,7 +23,7 @@ db.connect((err) => {
 });
 
 const app = express();
-const port = process.env.PORT || 5001;
+const port =  5000;
 
 
 app.use(cors());
@@ -131,6 +131,8 @@ app.delete('/boutiques/:id', (req, res) => {
     });
 });
 
+
+
 // Add tissu to a boutique
 app.post('/tissus', (req, res) => {
     const { nom, stock, unite, boutique_id } = req.body;
@@ -174,6 +176,31 @@ app.get('/api/tissus', (req, res) => {
         res.json(results);
     });
 });
+
+//route pour superadmin
+app.get('/api/superadmin/admins', (req, res) => {
+  const sql = `
+    SELECT proprio AS email, GROUP_CONCAT(nom SEPARATOR ',') AS boutiques
+    FROM boutique
+    GROUP BY proprio
+  `;
+  db.query(sql, (err, result) => {
+    if (err) {
+      console.error('Erreur récupération admins et boutiques', err);
+      return res.status(500).json({ error: 'Erreur serveur' });
+    }
+
+    const formatted = result.map(r => ({
+      email: r.email,
+      boutiques: r.boutiques
+        ? r.boutiques.split(',').map(nom => ({ nom }))
+        : [],
+    }));
+
+    res.json(formatted);
+  });
+});
+
 
 
 // Read a specific tissu by ID
@@ -274,7 +301,7 @@ app.post('/tissus/:id/sell', (req, res) => {
 });
 
 // Get sales logs for all boutiques (admin view)
-app.get('/logs', (req, res) => {
+app.get('/api/logs', (req, res) => {
     const sql = `
         SELECT log_vente.*, tissu.nom AS tissu_nom, tissu.unite, boutique.nom AS boutique_nom
         FROM log_vente
