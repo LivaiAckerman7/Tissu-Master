@@ -36,7 +36,7 @@ function App() {
         <Route path="/superadmin/logs" element={<SuperAdminLogs />} />
         <Route path="/admin/statistiques" element={<StatistiquesAdmin />} />
         <Route path='/admin/boutiques' element={<Boutiques account={account} />} />
-        <Route path="/admin/codebarres" element={<AdminBarcodes />} />
+        <Route path="/admin/codeQR" element={<AdminBarcodes />} />
         {/* Supprimer l'ancienne route /dashboard */}
       </Routes>
     </Router>
