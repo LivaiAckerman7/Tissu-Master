@@ -23,7 +23,7 @@ db.connect((err) => {
 });
 
 const app = express();
-const port =  5000;
+const port = 5000;
 
 
 app.use(cors());
