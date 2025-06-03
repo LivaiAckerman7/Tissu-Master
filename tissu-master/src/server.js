@@ -176,31 +176,146 @@ app.get('/api/tissus', (req, res) => {
         res.json(results);
     });
 });
+/* Differentes routes du superadmin */
 
 //route pour superadmin
 app.get('/api/superadmin/admins', (req, res) => {
   const sql = `
-    SELECT proprio AS email, GROUP_CONCAT(nom SEPARATOR ',') AS boutiques
+    SELECT proprio AS email, id, nom
     FROM boutique
-    GROUP BY proprio
   `;
+
   db.query(sql, (err, result) => {
     if (err) {
       console.error('Erreur récupération admins et boutiques', err);
       return res.status(500).json({ error: 'Erreur serveur' });
     }
 
-    const formatted = result.map(r => ({
-      email: r.email,
-      boutiques: r.boutiques
-        ? r.boutiques.split(',').map(nom => ({ nom }))
-        : [],
+    const grouped = {};
+
+    result.forEach(row => {
+      const email = row.email.trim();
+
+      if (!grouped[email]) {
+        grouped[email] = [];
+      }
+
+      grouped[email].push({
+        id: row.id,    // ✅ INCLUS maintenant
+        nom: row.nom
+      });
+    });
+
+    const formatted = Object.entries(grouped).map(([email, boutiques]) => ({
+      email,
+      boutiques
     }));
 
     res.json(formatted);
   });
 });
 
+
+
+ 
+// Supprimer une boutique par son ID
+// 🔁 Supprimer d'abord les logs → ensuite tissus → ensuite boutique
+app.delete('/api/superadmin/delete-boutique/:id', (req, res) => {
+  const id = req.params.id;
+
+  const deleteLogs = `DELETE FROM log_vente WHERE boutique_id = ?`;
+  const deleteTissus = `DELETE FROM tissu WHERE boutique_id = ?`;
+  const deleteBoutique = `DELETE FROM boutique WHERE id = ?`;
+
+  db.query(deleteLogs, [id], (err) => {
+    if (err) {
+      console.error('❌ Erreur suppression logs', err);
+      return res.status(500).json({ error: 'Erreur suppression logs' });
+    }
+
+    db.query(deleteTissus, [id], (err) => {
+      if (err) {
+        console.error('❌ Erreur suppression tissus', err);
+        return res.status(500).json({ error: 'Erreur suppression tissus' });
+      }
+
+      db.query(deleteBoutique, [id], (err) => {
+        if (err) {
+          console.error('❌ Erreur suppression boutique', err);
+          return res.status(500).json({ error: 'Erreur suppression boutique' });
+        }
+
+        return res.status(200).json({ message: 'Boutique et données supprimées' });
+      });
+    });
+  });
+});
+
+
+
+//voir statistiques pour le superadmin 
+app.get('/api/superadmin/stats', async (req, res) => {
+    const stats = {};
+
+    const queries = [
+        { key: 'total_boutiques', sql: 'SELECT COUNT(*) AS count FROM boutique' },
+        { key: 'total_tissus', sql: 'SELECT COUNT(*) AS count FROM tissu' },
+        { key: 'stock_total', sql: 'SELECT SUM(stock) AS total FROM tissu' },
+        { key: 'ventes_globales', sql: 'SELECT SUM(price * quantity) AS total FROM log_vente' },
+    ];
+
+    try {
+        for (const q of queries) {
+            const [rows] = await db.promise().query(q.sql);
+            stats[q.key] = rows[0].count ?? rows[0].total ?? 0;
+        }
+
+        res.json(stats);
+    } catch (err) {
+        console.error("Erreur statistiques globales", err);
+        res.status(500).json({ error: "Erreur serveur" });
+    }
+});
+
+//route filtrée 
+app.get('/api/superadmin/logs', (req, res) => {
+  const { start, end, boutique, admin } = req.query;
+
+  let baseSql = `
+    SELECT log_vente.*, tissu.nom AS tissu_nom, tissu.unite, boutique.nom AS boutique_nom, boutique.proprio
+    FROM log_vente
+    INNER JOIN tissu ON log_vente.tissu_id = tissu.id
+    INNER JOIN boutique ON log_vente.boutique_id = boutique.id
+    WHERE 1 = 1
+  `;
+
+  const params = [];
+
+  if (start && end) {
+    baseSql += ` AND log_vente.date BETWEEN ? AND ?`;
+    params.push(start, end);
+  }
+
+  if (boutique) {
+    baseSql += ` AND boutique.nom LIKE ?`;
+    params.push(`%${boutique}%`);
+  }
+
+  if (admin) {
+    baseSql += ` AND boutique.proprio LIKE ?`;
+    params.push(`%${admin}%`);
+  }
+
+  baseSql += ` ORDER BY log_vente.date DESC`;
+
+  db.query(baseSql, params, (err, result) => {
+    if (err) {
+      console.error('Erreur récupération des logs superadmin', err);
+      return res.status(500).json({ error: 'Erreur serveur' });
+    }
+    res.status(200).json(result);
+  });
+});
 
 
 // Read a specific tissu by ID
