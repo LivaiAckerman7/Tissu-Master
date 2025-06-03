@@ -116,7 +116,7 @@ function DashboardAdmin() {
                         <ListItemText>Boutiques</ListItemText>
                     </ListItem>
                       <ListItem button component="a" href="/admin/statistiques">
-                        <ListItemIcon><Storefront /></ListItemIcon>
+                        <ListItemIcon><AssessmentIcon /></ListItemIcon>
                         <ListItemText>Statistiques</ListItemText>
                     </ListItem>
                 </List>
