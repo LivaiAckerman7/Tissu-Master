@@ -25,12 +25,17 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/user" element={<DashboardUser account={account} />} />
+        {/* Route unique pour le dashboard utilisateur */}
+        <Route
+          path="/user/:tissuId?"
+          element={<DashboardUser account={account} />}
+        />
         <Route path="/admin" element={<DashboardAdmin account={account} />} />
         <Route path="/superadmin" element={<DashboardSuperAdmin />} />
         <Route path="/admin/statistiques" element={<StatistiquesAdmin />} />
         <Route path='/admin/boutiques' element={<Boutiques account={account} />} />
-         <Route path="/admin/codebarres" element={<AdminBarcodes />} /> 
+        <Route path="/admin/codebarres" element={<AdminBarcodes />} />
+        {/* Supprimer l'ancienne route /dashboard */}
       </Routes>
     </Router>
   );

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import JsBarcode from 'jsbarcode';
+import QRCode from 'qrcode';
 import {
   Container,
   Typography,
@@ -15,13 +15,13 @@ const AdminBarcodes = () => {
   useEffect(() => {
     const fetchTissus = async () => {
       try {
-       const response = await fetch('http://localhost:5000/api/tissus');
-
+        const response = await fetch('http://localhost:5000/api/tissus');
         const data = await response.json();
 
         const produitsAvecRefs = data.map(p => ({
           ...p,
           ref: React.createRef(),
+          qrCodeUrl: `${window.location.origin}/user/${p.id}` // URL complète
         }));
 
         setProduits(produitsAvecRefs);
@@ -34,32 +34,69 @@ const AdminBarcodes = () => {
   }, []);
 
   useEffect(() => {
-    produits.forEach(produit => {
-      if (produit.ref.current) {
-        JsBarcode(produit.ref.current, produit.id.toString(), {
-          format: 'CODE128',
-          width: 2,
-          height: 40,
-          displayValue: true,
-        });
+    const generateQRCodes = async () => {
+      for (const produit of produits) {
+        if (produit.ref.current) {
+          try {
+            await QRCode.toCanvas(
+              produit.ref.current,
+              produit.qrCodeUrl,
+              {
+                width: 150,
+                margin: 1,
+                color: {
+                  dark: '#000000',
+                  light: '#ffffff'
+                }
+              }
+            );
+          } catch (err) {
+            console.error('Erreur génération QR code', err);
+          }
+        }
       }
-    });
+    };
+
+    generateQRCodes();
   }, [produits]);
 
   const printLabelPage = produit => {
-    const barcodeSVG = produit.ref.current.outerHTML;
+    const qrCodeCanvas = produit.ref.current;
+    const qrCodeImage = qrCodeCanvas.toDataURL('image/png');
 
     const labelContent = `
       <html>
       <head>
         <style>
-          body { text-align: center; font-family: Arial; }
-          h1 { margin-top: 10px; }
+          body { 
+            text-align: center; 
+            font-family: Arial; 
+            padding: 20px;
+          }
+          h1 { 
+            margin: 10px 0;
+            font-size: 18px;
+          }
+          .label-container {
+            border: 1px dashed #ccc;
+            padding: 15px;
+            display: inline-block;
+            margin: 10px;
+          }
+          .product-info {
+            margin-bottom: 10px;
+          }
         </style>
       </head>
       <body>
-        <h1>${produit.nom}</h1>
-        ${barcodeSVG}
+        <div class="label-container">
+          <div class="product-info">
+            <h1>${produit.nom}</h1>
+            <p>Boutique: ${produit.boutique_nom}</p>
+          </div>
+          <img src="${qrCodeImage}" alt="QR Code"/>
+          <p>Scanner pour vendre</p>
+        </div>
         <script>window.print()</script>
       </body>
       </html>
@@ -73,7 +110,7 @@ const AdminBarcodes = () => {
   return (
     <Container maxWidth="md">
       <Typography variant="h4" gutterBottom>
-        Génération de codes-barres pour les tissus
+        Génération de codes QR pour les tissus
       </Typography>
       <List>
         {produits.map((produit, index) => (
@@ -82,7 +119,7 @@ const AdminBarcodes = () => {
               primary={produit.nom}
               secondary={`Boutique: ${produit.boutique_nom}`}
             />
-            <svg ref={produit.ref}></svg>
+            <canvas ref={produit.ref}></canvas>
             <Button
               variant="contained"
               color="primary"
