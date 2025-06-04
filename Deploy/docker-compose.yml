@@ -15,8 +15,9 @@ services:
       context: ../tissu-master
       dockerfile: Dockerfile.backend
     environment:
-      - DB_HOST=db  # Remplacez par l'IP/hostname réel
+      - DB_HOST=192.168.1.85    # Remplacez par l'IP/hostname réel
       - DB_USER=root
+      - DB_PORT=5000 
       - DB_PASSWORD=7C2742Regy8kCC9V
       - DB_NAME=app_db
     ports:
