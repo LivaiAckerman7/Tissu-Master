@@ -1,56 +1,133 @@
-import React from 'react';
-import { Container, Typography, Box } from '@mui/material';
+import React, { useEffect, useState } from "react";
+import {
+  AppBar,
+  Toolbar,
+  IconButton,
+  Typography,
+  Drawer,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Container,
+  Box
+} from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import LogoutIcon from "@mui/icons-material/Logout";
+import AssessmentIcon from "@mui/icons-material/Assessment";
+import StorefrontIcon from "@mui/icons-material/Storefront";
+
+import { useNavigate } from "react-router-dom";
+import { Client, Account } from "appwrite";
+import appwriteConfig from "../../config/appwriteConfig";
+
+const client = new Client()
+  .setEndpoint(appwriteConfig.endpoint)
+  .setProject(appwriteConfig.projectId);
+
+const account = new Account(client);
 
 function StatistiquesAdmin() {
-    return (
-        <Container maxWidth="xl" sx={{ mt: 4 }}>
-            <Typography variant="h4" gutterBottom>Statistiques des ventes</Typography>
+  const [username, setUsername] = useState("");
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const navigate = useNavigate();
 
-            <Box sx={{ mt: 4 }}>
-                <Typography variant="h6">📊 Tissus les plus vendus</Typography>
-                <iframe
-                    src="http://localhost:3001/d/e8eb0032-664f-4bc3-9756-793b7e8bfc1d/top-20-tissus-vendus?orgId=1&from=now-6h&to=now&timezone=browser"
-                    width="100%"
-                    height="400"
-                    frameBorder="0"
-                    title="Top Tissus"
-                ></iframe>
-            </Box>
+  useEffect(() => {
+    const jwt = localStorage.getItem("jwt");
+    if (!jwt) {
+      navigate("/login");
+    } else {
+      client.setJWT(jwt);
+      account
+        .get()
+        .then((res) => {
+          setUsername(res.name);
+        })
+        .catch((err) => {
+          console.error("Erreur Appwrite:", err);
+          navigate("/login");
+        });
+    }
+  }, [navigate]);
 
-            <Box sx={{ mt: 4 }}>
-                <Typography variant="h6">📉 Tissus les moins vendus</Typography>
-                <iframe
-                    src="http://localhost:3001/d/0b26dd2c-0f33-42c2-a849-bcb1077e588f/top-20-tissus-les-moins-vendus?orgId=1&from=now-6h&to=now&timezone=browser&shareView=public_dashboard"
-                    width="100%"
-                    height="400"
-                    frameBorder="0"
-                    title="Bottom Tissus"
-                ></iframe>
-            </Box>
+  const handleLogout = async () => {
+    try {
+      await account.deleteSession("current");
+      localStorage.removeItem("jwt");
+      navigate("/login");
+    } catch (err) {
+      console.error("Erreur logout:", err);
+    }
+  };
 
-          {/*   <Box sx={{ mt: 4 }}>
-                <Typography variant="h6">📆 Évolution chiffre d'affaires</Typography>
-                <iframe
-                    src="http://localhost:3001/d/zzzzzz/evolution-ca?orgId=1&kiosk"
-                    width="100%"
-                    height="400"
-                    frameBorder="0"
-                    title="Évolution CA"
-                ></iframe>
-            </Box>
+  const handleReload = () => {
+    navigate("/admin");
+  };
 
-            <Box sx={{ mt: 4 }}>
-                <Typography variant="h6">🏪 Chiffre d’affaires par boutique</Typography>
-                <iframe
-                    src="http://localhost:3001/d/aaaaaa/ca-boutique?orgId=1&kiosk"
-                    width="100%"
-                    height="400"
-                    frameBorder="0"
-                    title="CA Boutique"
-                ></iframe> 
-            </Box>*/}
-        </Container>
-    );
+  return (
+    <div>
+      {/* Barre d’en-tête */}
+      <AppBar position="static">
+        <Toolbar>
+          <IconButton
+            edge="start"
+            color="inherit"
+            aria-label="menu"
+            onClick={() => setIsDrawerOpen(true)}
+          >
+            <MenuIcon />
+          </IconButton>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            Statistiques
+          </Typography>
+          <Typography>{username}</Typography>
+          <IconButton color="inherit">
+            <AccountCircleIcon />
+          </IconButton>
+          <IconButton color="inherit" onClick={handleLogout}>
+            <LogoutIcon />
+          </IconButton>
+        </Toolbar>
+      </AppBar>
+
+      {/* Menu latéral */}
+      <Drawer anchor="left" open={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}>
+        <List>
+          <ListItem button onClick={handleReload}>
+            <ListItemIcon><AssessmentIcon /></ListItemIcon>
+            <ListItemText>Tableau de bord</ListItemText>
+          </ListItem>
+          <ListItem button component="a" href="/admin/boutiques">
+            <ListItemIcon><StorefrontIcon /></ListItemIcon>
+            <ListItemText>Boutiques</ListItemText>
+          </ListItem>
+          <ListItem button component="a" href="/admin/statistiques">
+            <ListItemIcon><AssessmentIcon /></ListItemIcon>
+            <ListItemText>Statistiques</ListItemText>
+          </ListItem>
+        </List>
+      </Drawer>
+
+      {/* Contenu principal */}
+      <Container maxWidth="xl" sx={{ mt: 6 }}>
+        <Typography variant="h4" gutterBottom>
+          Statistiques des ventes
+        </Typography>
+
+        <Box sx={{ mt: 4 }}>
+          <iframe
+            src="http://localhost:3001/d/e8eb0032-664f-4bc3-9756-793b7e8bfc1d/top-20-tissus-vendus?orgId=1&from=now-6h&to=now&timezone=browser"
+            width="100%"
+            height="800"
+            frameBorder="0"
+            title="Top Tissus"
+            style={{ borderRadius: 8 }}
+          ></iframe>
+        </Box>
+      </Container>
+    </div>
+  );
 }
 
 export default StatistiquesAdmin;
