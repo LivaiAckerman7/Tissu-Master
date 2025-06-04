@@ -63,7 +63,7 @@ function DashboardUser() {
   const fetchLogs = useCallback(async (id) => {
     if (!id) return;
     try {
-      const res = await fetch(`http://localhost:5000/logs/boutique/${id}`);
+      const res = await fetch(`http://192.168.1.85:5000/logs/boutique/${id}`);
       const data = await res.json();
       setLogs(data);
     } catch (e) {
@@ -74,7 +74,7 @@ function DashboardUser() {
   const fetchTissus = useCallback(async (id) => {
     if (!id) return;
     try {
-      const res = await fetch(`http://localhost:5000/boutiques/${id}/tissus`);
+      const res = await fetch(`http://192.168.1.85:5000/boutiques/${id}/tissus`);
       const data = await res.json();
       setTissus(data);
     } catch (e) {
@@ -87,7 +87,7 @@ function DashboardUser() {
       try {
         const encoded = encodeURIComponent(email);
         const res = await fetch(
-          `http://localhost:5000/boutique/email/${encoded}`
+          `http://192.168.1.85:5000/boutique/email/${encoded}`
         );
         const data = await res.json();
         setBoutiqueId(data.id);
@@ -184,7 +184,7 @@ function DashboardUser() {
     const totalPrice = parseFloat(unitPrice) * parseFloat(sellQuantity);
     try {
       const res = await fetch(
-        `http://localhost:5000/tissus/${selectedTissu.id}/sell`,
+        `http://192.168.1.85:5000/tissus/${selectedTissu.id}/sell`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

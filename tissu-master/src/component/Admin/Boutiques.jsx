@@ -74,7 +74,7 @@ function Boutique() {
   const fetchTissus = useCallback(async (boutiqueId) => {
     try {
       const response = await fetch(
-        `http://localhost:5000/boutiques/${boutiqueId}/tissus`
+        `http://192.168.1.85:5000/boutiques/${boutiqueId}/tissus`
       );
       const data = await response.json();
 
@@ -89,7 +89,7 @@ function Boutique() {
       try {
         const encodedEmail = encodeURIComponent(email);
         const response = await fetch(
-          `http://localhost:5000/boutiques/email/${encodedEmail}`
+          `http://192.168.1.85:5000/boutiques/email/${encodedEmail}`
         );
         const data = await response.json();
         setBoutiques(data);
@@ -301,7 +301,7 @@ function Boutique() {
     if (!validateTissu()) return;
 
     try {
-      const response = await fetch("http://localhost:5000/tissus", {
+      const response = await fetch("http://192.168.1.85:5000/tissus", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -350,7 +350,7 @@ function Boutique() {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/tissus/${editTissu.id}`,
+        `http://192.168.1.85:5000/tissus/${editTissu.id}`,
         {
           method: "PUT",
           headers: {
@@ -384,7 +384,7 @@ function Boutique() {
   const handleDeleteTissuSubmit = async () => {
     try {
       const response = await fetch(
-        `http://localhost:5000/tissus/${tissuToDelete.id}`,
+        `http://192.168.1.85:5000/tissus/${tissuToDelete.id}`,
         {
           method: "DELETE",
         }

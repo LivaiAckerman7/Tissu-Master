@@ -6,7 +6,7 @@ const mysql = require('mysql2');
 
 
 const db = mysql.createConnection({
-	host: 'localhost', //kryptommonaie.com
+	host: '192.168.1.85', //kryptommonaie.com
     port: 3306,
     user: 'root',
     password: 'passer',

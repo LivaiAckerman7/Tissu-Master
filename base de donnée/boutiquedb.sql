@@ -25,7 +25,7 @@ DELIMITER $$
 --
 -- Procédures
 --
-CREATE DEFINER=`root`@`localhost` PROCEDURE `SellProduct` (IN `product_id` INT, IN `quantity` INT)   BEGIN
+CREATE DEFINER=`root`@`192.168.1.85` PROCEDURE `SellProduct` (IN `product_id` INT, IN `quantity` INT)   BEGIN
     UPDATE produit
     SET stock = stock - quantity
     WHERE id = product_id AND stock >= quantity;

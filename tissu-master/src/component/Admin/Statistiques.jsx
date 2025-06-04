@@ -117,7 +117,7 @@ function StatistiquesAdmin() {
 
         <Box sx={{ mt: 4 }}>
           <iframe
-            src="http://localhost:3001/d/e8eb0032-664f-4bc3-9756-793b7e8bfc1d/top-20-tissus-vendus?orgId=1&from=now-6h&to=now&timezone=browser"
+            src="http://192.168.1.85:3001/d/e8eb0032-664f-4bc3-9756-793b7e8bfc1d/top-20-tissus-vendus?orgId=1&from=now-6h&to=now&timezone=browser"
             width="100%"
             height="800"
             frameBorder="0"
