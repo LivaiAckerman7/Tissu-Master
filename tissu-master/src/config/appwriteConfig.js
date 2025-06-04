@@ -3,4 +3,4 @@ const appwriteConfig = {
     projectId: '6839e3260032d4ce66ce',
 };
 
-export default appwriteConfig;
+export default appwriteConfig; 
