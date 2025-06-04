@@ -1,15 +1,40 @@
-version: '3.8'
+version: "3.8"
 
 services:
-  web:
-    image: nginx:latest
-    container_name: tissu-master
-    restart: always
+  frontend:
+    build:
+      context: ../tissu-master
     ports:
-      - "8081:80"  # Expose le site sur le port 80
-    volumes:
-      - /home/joe/Tissu-Master/tissu-master/build:/usr/share/nginx/html  # Dossier contenant ton site
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro  # Fichier de config Nginx personnalisé
+      - "8081:80"
+    depends_on:
+      - backend
+    restart: always
+
+  backend:
+    build:
+      context: ../tissu-master
+      dockerfile: Dockerfile.backend
     environment:
-      - NGINX_HOST=mon-site.com
-      - NGINX_PORT=80
+      - DB_HOST=db  # Remplacez par l'IP/hostname réel
+      - DB_USER=root
+      - DB_PASSWORD=7C2742Regy8kCC9V
+      - DB_NAME=app_db
+    ports:
+      - "5101:5000"
+    # Supprimez depends_on car la DB est externe
+    restart: always
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "8083:3000"
+    environment:
+      - GF_SECURITY_ALLOW_EMBEDDING=true
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+    volumes:
+      - grafana_data:/var/lib/grafana
+    restart: always
+
+volumes:
+  grafana_data:  # Supprimez db_data inutilisé
