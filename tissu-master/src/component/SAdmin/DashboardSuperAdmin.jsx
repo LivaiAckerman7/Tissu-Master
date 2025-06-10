@@ -39,7 +39,7 @@ function DashboardSuperAdmin() {
   }, []);
 
   const fetchAdmins = () => {
-    fetch("/api/superadmin/admins")
+    fetch("http://192.168.1.85:5101/superadmin/admins")
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
@@ -51,7 +51,7 @@ function DashboardSuperAdmin() {
   const handleDeleteBoutique = async (id) => {
     if (!window.confirm("Supprimer cette boutique ?")) return;
     try {
-      const res = await fetch(`/api/superadmin/delete-boutique/${id}`, {
+      const res = await fetch(`http://192.168.1.85:5101/superadmin/delete-boutique/${id}`, {
         method: "DELETE",
       });
       if (res.ok) {
