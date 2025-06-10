@@ -61,7 +61,7 @@ function DashboardAdmin() {
 
   const fetchLogs = async () => {
     try {
-      const response = await fetch("/api/logs");
+      const response = await fetch("http://192.168.1.85:5101/api/logs");
       const data = await response.json();
       setLogs(data);
     } catch (error) {
