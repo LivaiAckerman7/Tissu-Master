@@ -6,10 +6,10 @@ const mysql = require('mysql2');
 
 
 const db = mysql.createConnection({
-    host: 'db', //kryptommonaie.com
-    port: 5000,
-    user: 'db_user',
-    password: 'db_user_pass',
+    host: '192.168.1.85', //kryptommonaie.com
+    port: 3005,
+    user: 'root',
+    password: 'root_password',
     database: 'app_db'
 });
 
@@ -23,7 +23,7 @@ db.connect((err) => {
 });
 
 const app = express();
-const port = 5000;
+const port = 5101;
 
 
 app.use(cors());
