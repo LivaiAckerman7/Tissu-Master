@@ -34,6 +34,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import { Client, Account, ID } from "appwrite";
 import appwriteConfig from "../../config/appwriteConfig";
 
+
 function Boutique() {
   const [boutiques, setBoutiques] = useState([]);
   const [selectedBoutique, setSelectedBoutique] = useState("");
@@ -70,11 +71,12 @@ function Boutique() {
   const [tissuErrors, setTissuErrors] = useState({});
 
   const navigate = useNavigate();
+  
 
   const fetchTissus = useCallback(async (boutiqueId) => {
     try {
       const response = await fetch(
-        `http://192.168.1.85:5000/boutiques/${boutiqueId}/tissus`
+        `https://${process.env.BACK_END_URL}/boutiques/${boutiqueId}/tissus`
       );
       const data = await response.json();
 
@@ -89,7 +91,7 @@ function Boutique() {
       try {
         const encodedEmail = encodeURIComponent(email);
         const response = await fetch(
-          `http://192.168.1.85:5000/boutiques/email/${encodedEmail}`
+          `https://${process.env.BACK_END_URL}/boutiques/email/${encodedEmail}`
         );
         const data = await response.json();
         setBoutiques(data);
@@ -243,7 +245,7 @@ function Boutique() {
 
     try {
       // 2. Ensuite, créer la boutique dans MySQL via l'API backend
-      const response = await fetch("http://192.168.1.85:5000/boutiques", {
+      const response = await fetch(`https://${process.env.BACK_END_URL}/boutiques`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -301,7 +303,7 @@ function Boutique() {
     if (!validateTissu()) return;
 
     try {
-      const response = await fetch("http://192.168.1.85:5000/tissus", {
+      const response = await fetch(`https://${process.env.BACK_END_URL}/tissus`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -350,7 +352,7 @@ function Boutique() {
 
     try {
       const response = await fetch(
-        `http://192.168.1.85:5000/tissus/${editTissu.id}`,
+        `https://${process.env.BACK_END_URL}/tissus/${editTissu.id}`,
         {
           method: "PUT",
           headers: {
@@ -384,7 +386,7 @@ function Boutique() {
   const handleDeleteTissuSubmit = async () => {
     try {
       const response = await fetch(
-        `http://192.168.1.85:5000/tissus/${tissuToDelete.id}`,
+        `https://${process.env.BACK_END_URL}/tissus/${tissuToDelete.id}`,
         {
           method: "DELETE",
         }
