@@ -33,7 +33,7 @@ const AdminBarcodes = () => {
 
   const fetchTissus = useCallback(async () => {
     try {
-      const response = await fetch(`https://${process.env.BACK_END_URL}/api/tissus`);
+      const response = await fetch(`https://${process.env.REACT_APP_BACK_END_URL}/api/tissus`);
       const data = await response.json();
 
       // Ajout des refs et urls QR pour chaque produit

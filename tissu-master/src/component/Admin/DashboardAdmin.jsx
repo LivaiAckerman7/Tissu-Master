@@ -61,7 +61,7 @@ function DashboardAdmin() {
 
   const fetchLogs = async () => {
     try {
-      const response = await fetch(`https://${process.env.BACK_END_URL}/api/logs`);
+      const response = await fetch(`https://${process.env.REACT_APP_BACK_END_URL}/api/logs`);
       const data = await response.json();
       setLogs(data);
     } catch (error) {

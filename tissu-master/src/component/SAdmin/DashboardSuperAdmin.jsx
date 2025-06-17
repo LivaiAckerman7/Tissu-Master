@@ -28,7 +28,7 @@ function DashboardSuperAdmin() {
   const [stats, setStats] = useState(null);
 
   useEffect(() => {
-    fetch(`https://${process.env.BACK_END_URL}/api/superadmin/stats`)
+    fetch(`https://${process.env.REACT_APP_BACK_END_URL}/api/superadmin/stats`)
       .then((res) => res.json())
       .then(setStats)
       .catch((err) => console.error("Erreur chargement stats globales:", err));
@@ -39,7 +39,7 @@ function DashboardSuperAdmin() {
   }, []);
 
   const fetchAdmins = () => {
-    fetch(`https://${process.env.BACK_END_URL}/api/superadmin/admins`)
+    fetch(`https://${process.env.REACT_APP_BACK_END_URL}/api/superadmin/admins`)
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
@@ -51,7 +51,7 @@ function DashboardSuperAdmin() {
   const handleDeleteBoutique = async (id) => {
     if (!window.confirm("Supprimer cette boutique ?")) return;
     try {
-      const res = await fetch(`https://${process.env.BACK_END_URL}/api/superadmin/delete-boutique/${id}`, {
+      const res = await fetch(`https://${process.env.REACT_APP_BACK_END_URL}/api/superadmin/delete-boutique/${id}`, {
         method: "DELETE",
       });
       if (res.ok) {

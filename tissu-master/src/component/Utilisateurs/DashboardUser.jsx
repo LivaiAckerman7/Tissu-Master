@@ -63,7 +63,7 @@ function DashboardUser() {
   const fetchLogs = useCallback(async (id) => {
     if (!id) return;
     try {
-      const res = await fetch(`https://${process.env.BACK_END_URL}/logs/boutique/${id}`);
+      const res = await fetch(`https://${process.env.REACT_APP_BACK_END_URL}/logs/boutique/${id}`);
       const data = await res.json();
       setLogs(data);
     } catch (e) {
@@ -74,7 +74,7 @@ function DashboardUser() {
   const fetchTissus = useCallback(async (id) => {
     if (!id) return;
     try {
-      const res = await fetch(`https://${process.env.BACK_END_URL}/boutiques/${id}/tissus`);
+      const res = await fetch(`https://${process.env.REACT_APP_BACK_END_URL}/boutiques/${id}/tissus`);
       const data = await res.json();
       setTissus(data);
     } catch (e) {
@@ -87,7 +87,7 @@ function DashboardUser() {
       try {
         const encoded = encodeURIComponent(email);
         const res = await fetch(
-          `https://${process.env.BACK_END_URL}/boutique/email/${encoded}`
+          `https://${process.env.REACT_APP_BACK_END_URL}/boutique/email/${encoded}`
         );
         const data = await res.json();
         setBoutiqueId(data.id);
@@ -184,7 +184,7 @@ function DashboardUser() {
     const totalPrice = parseFloat(unitPrice) * parseFloat(sellQuantity);
     try {
       const res = await fetch(
-        `https://${process.env.BACK_END_URL}/tissus/${selectedTissu.id}/sell`,
+        `https://${process.env.REACT_APP_BACK_END_URL}/tissus/${selectedTissu.id}/sell`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

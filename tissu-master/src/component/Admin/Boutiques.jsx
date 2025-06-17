@@ -74,7 +74,7 @@ function Boutique() {
   const fetchTissus = useCallback(async (boutiqueId) => {
     try {
       const response = await fetch(
-        `https://${process.env.BACK_END_URL}/boutiques/${boutiqueId}/tissus`
+        `https://${process.env.REACT_APP_BACK_END_URL}/boutiques/${boutiqueId}/tissus`
       );
       const data = await response.json();
 
@@ -89,7 +89,7 @@ function Boutique() {
       try {
         const encodedEmail = encodeURIComponent(email);
         const response = await fetch(
-          `https://${process.env.BACK_END_URL}/boutiques/email/${encodedEmail}`
+          `https://${process.env.REACT_APP_BACK_END_URL}/boutiques/email/${encodedEmail}`
         );
         const data = await response.json();
         setBoutiques(data);
@@ -243,10 +243,11 @@ function Boutique() {
 
     try {
       // 2. Ensuite, créer la boutique dans MySQL via l'API backend
-      const response = await fetch(`https://${process.env.BACK_END_URL}/api/boutiques`, {
+      const response = await fetch(`https://${process.env.REACT_APP_BACK_END_URL}/boutiques`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "x-client-origin": "https://secure.Kryptomonnaie.com",
         },
         body: JSON.stringify({
           ...newBoutique,
@@ -301,7 +302,7 @@ function Boutique() {
     if (!validateTissu()) return;
 
     try {
-      const response = await fetch(`https://${process.env.BACK_END_URL}/tissus`, {
+      const response = await fetch(`https://${process.env.REACT_APP_BACK_END_URL}/tissus`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -350,7 +351,7 @@ function Boutique() {
 
     try {
       const response = await fetch(
-        `https://${process.env.BACK_END_URL}/tissus/${editTissu.id}`,
+        `https://${process.env.REACT_APP_BACK_END_URL}/tissus/${editTissu.id}`,
         {
           method: "PUT",
           headers: {
@@ -384,7 +385,7 @@ function Boutique() {
   const handleDeleteTissuSubmit = async () => {
     try {
       const response = await fetch(
-        `https://${process.env.BACK_END_URL}/tissus/${tissuToDelete.id}`,
+        `https://${process.env.REACT_APP_BACK_END_URL}/tissus/${tissuToDelete.id}`,
         {
           method: "DELETE",
         }

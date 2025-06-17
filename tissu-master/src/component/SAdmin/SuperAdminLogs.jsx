@@ -16,7 +16,7 @@ function SuperAdminLogs() {
 
   const fetchLogs = async () => {
     const params = new URLSearchParams(filters);
-    const res = await fetch(`https://${process.env.BACK_END_URL}/api/superadmin/logs?${params.toString()}`);
+    const res = await fetch(`https://${process.env.REACT_APP_BACK_END_URL}/api/superadmin/logs?${params.toString()}`);
     const data = await res.json();
     setLogs(data);
   };
