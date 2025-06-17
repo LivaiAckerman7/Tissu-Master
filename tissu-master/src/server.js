@@ -2,15 +2,16 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const mysql = require('mysql2');
- require('dotenv').config();
+require('dotenv').config();
 
 
 const db = mysql.createConnection({
-	host: '192.168.1.85', //kryptommonaie.com
+    host: 'db', 
     port: 3306,
-    user: 'root',
-    password: 'passer',
-    database: 'app_db'
+    user: 'db_user',
+    password: 'db_user_pass',
+    database: 'app_db',
+    ssl: { rejectUnauthorized: false }
 });
 
 
@@ -25,6 +26,21 @@ db.connect((err) => {
 const app = express();
 const port = 5000;
 
+// Middleware Node.js/Express
+app.use((req, res, next) => {
+    const allowedOrigins = new Set([
+        'http://localhost',
+        'http://192.168.1.85'
+    ]);
+
+    const clientOrigin = req.headers['x-client-origin'];
+
+    if (allowedOrigins.has(clientOrigin)) {
+        res.setHeader('Access-Control-Allow-Origin', clientOrigin);
+    }
+
+    next();
+});
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -180,75 +196,75 @@ app.get('/api/tissus', (req, res) => {
 
 //route pour superadmin
 app.get('/api/superadmin/admins', (req, res) => {
-  const sql = `
+    const sql = `
     SELECT proprio AS email, id, nom
     FROM boutique
   `;
 
-  db.query(sql, (err, result) => {
-    if (err) {
-      console.error('Erreur récupération admins et boutiques', err);
-      return res.status(500).json({ error: 'Erreur serveur' });
-    }
+    db.query(sql, (err, result) => {
+        if (err) {
+            console.error('Erreur récupération admins et boutiques', err);
+            return res.status(500).json({ error: 'Erreur serveur' });
+        }
 
-    const grouped = {};
+        const grouped = {};
 
-    result.forEach(row => {
-      const email = row.email.trim();
+        result.forEach(row => {
+            const email = row.email.trim();
 
-      if (!grouped[email]) {
-        grouped[email] = [];
-      }
+            if (!grouped[email]) {
+                grouped[email] = [];
+            }
 
-      grouped[email].push({
-        id: row.id,    // ✅ INCLUS maintenant
-        nom: row.nom
-      });
+            grouped[email].push({
+                id: row.id,    // ✅ INCLUS maintenant
+                nom: row.nom
+            });
+        });
+
+        const formatted = Object.entries(grouped).map(([email, boutiques]) => ({
+            email,
+            boutiques
+        }));
+
+        res.json(formatted);
     });
-
-    const formatted = Object.entries(grouped).map(([email, boutiques]) => ({
-      email,
-      boutiques
-    }));
-
-    res.json(formatted);
-  });
 });
 
 
 
- 
+
 // Supprimer une boutique par son ID
 // 🔁 Supprimer d'abord les logs → ensuite tissus → ensuite boutique
 app.delete('/api/superadmin/delete-boutique/:id', (req, res) => {
-  const id = req.params.id;
+    const id = req.params.id;
 
-  const deleteLogs = `DELETE FROM log_vente WHERE boutique_id = ?`;
-  const deleteTissus = `DELETE FROM tissu WHERE boutique_id = ?`;
-  const deleteBoutique = `DELETE FROM boutique WHERE id = ?`;
+    const deleteLogs = `DELETE FROM log_vente WHERE boutique_id = ?`;
+    const deleteTissus = `DELETE FROM tissu WHERE boutique_id = ?`;
+    const deleteBoutique = `DELETE FROM boutique WHERE id = ?`;
 
-  db.query(deleteLogs, [id], (err) => {
-    if (err) {
-      console.error('❌ Erreur suppression logs', err);
-      return res.status(500).json({ error: 'Erreur suppression logs' });
-    }
-
-    db.query(deleteTissus, [id], (err) => {
-      if (err) {
-        console.error('❌ Erreur suppression tissus', err);
-        return res.status(500).json({ error: 'Erreur suppression tissus' });
-      }
-
-      db.query(deleteBoutique, [id], (err) => {
+    db.query(deleteLogs, [id], (err) => {
         if (err) {
-          console.error('❌ Erreur suppression boutique', err);
-          return res.status(500).json({ error: 'Erreur suppression boutique' });
+            console.error('❌ Erreur suppression logs', err);
+            return res.status(500).json({ error: 'Erreur suppression logs' });
         }
 
-        return res.status(200).json({ message: 'Boutique et données supprimées' });
-      });
+        db.query(deleteTissus, [id], (err) => {
+            if (err) {
+                console.error('❌ Erreur suppression tissus', err);
+                return res.status(500).json({ error: 'Erreur suppression tissus' });
+            }
+
+            db.query(deleteBoutique, [id], (err) => {
+                if (err) {
+                    console.error('❌ Erreur suppression boutique', err);
+                    return res.status(500).json({ error: 'Erreur suppression boutique' });
+                }
+
+                return res.status(200).json({ message: 'Boutique et données supprimées' });
+            });
+        });
     });
-  });
 });
 
 
@@ -279,9 +295,9 @@ app.get('/api/superadmin/stats', async (req, res) => {
 
 //route filtrée 
 app.get('/api/superadmin/logs', (req, res) => {
-  const { start, end, boutique, admin } = req.query;
+    const { start, end, boutique, admin } = req.query;
 
-  let baseSql = `
+    let baseSql = `
     SELECT log_vente.*, tissu.nom AS tissu_nom, tissu.unite, boutique.nom AS boutique_nom, boutique.proprio
     FROM log_vente
     INNER JOIN tissu ON log_vente.tissu_id = tissu.id
@@ -289,32 +305,32 @@ app.get('/api/superadmin/logs', (req, res) => {
     WHERE 1 = 1
   `;
 
-  const params = [];
+    const params = [];
 
-  if (start && end) {
-    baseSql += ` AND log_vente.date BETWEEN ? AND ?`;
-    params.push(start, end);
-  }
-
-  if (boutique) {
-    baseSql += ` AND boutique.nom LIKE ?`;
-    params.push(`%${boutique}%`);
-  }
-
-  if (admin) {
-    baseSql += ` AND boutique.proprio LIKE ?`;
-    params.push(`%${admin}%`);
-  }
-
-  baseSql += ` ORDER BY log_vente.date DESC`;
-
-  db.query(baseSql, params, (err, result) => {
-    if (err) {
-      console.error('Erreur récupération des logs superadmin', err);
-      return res.status(500).json({ error: 'Erreur serveur' });
+    if (start && end) {
+        baseSql += ` AND log_vente.date BETWEEN ? AND ?`;
+        params.push(start, end);
     }
-    res.status(200).json(result);
-  });
+
+    if (boutique) {
+        baseSql += ` AND boutique.nom LIKE ?`;
+        params.push(`%${boutique}%`);
+    }
+
+    if (admin) {
+        baseSql += ` AND boutique.proprio LIKE ?`;
+        params.push(`%${admin}%`);
+    }
+
+    baseSql += ` ORDER BY log_vente.date DESC`;
+
+    db.query(baseSql, params, (err, result) => {
+        if (err) {
+            console.error('Erreur récupération des logs superadmin', err);
+            return res.status(500).json({ error: 'Erreur serveur' });
+        }
+        res.status(200).json(result);
+    });
 });
 
 

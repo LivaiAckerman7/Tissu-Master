@@ -1,6 +1,8 @@
 FROM node:18-alpine
 WORKDIR /app
+RUN apk add --no-cache mysql-client
 COPY . .
+RUN npm install -g wait-port
 RUN npm install
 EXPOSE 5000
-CMD ["node", "src/server.js"]
+CMD ["sh", "-c", "wait-port db:3306 && node src/server.js"]

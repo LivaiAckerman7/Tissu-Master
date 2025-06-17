@@ -4,7 +4,7 @@ services:
     image: mysql:latest
     container_name: db
     environment:
-      MYSQL_ROOT_PASSWORD: 7C2742Regy8kCC9V
+      MYSQL_ROOT_PASSWORD: Tango@2025
       MYSQL_DATABASE: app_db
       MYSQL_USER: db_user
       MYSQL_PASSWORD: db_user_pass
@@ -18,7 +18,7 @@ services:
     links:
       - db
     environment:
-      PMA_HOST: db
+      PMA_HOST: 172.23.0.3
       PMA_PORT: 3306
       PMA_ARBITRARY: 1
     restart: always

@@ -1,6 +1,55 @@
 version: "3.8"
 
 services:
+  db:
+    image: mysql:8.0
+    container_name: db
+    environment:
+      MYSQL_ROOT_PASSWORD: Tango@2025
+      MYSQL_DATABASE: app_db
+      MYSQL_USER: db_user
+      MYSQL_PASSWORD: db_user_pass
+      MYSQL_ROOT_HOST: '%'
+    ports:
+      - "6033:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+    networks:
+      - tissu-net
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: pma
+    depends_on:
+      - db
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+    restart: always
+    ports:
+      - "5000:80"
+    networks:
+      - tissu-net
+
+  backend:
+    build:
+      context: ../tissu-master
+      dockerfile: Dockerfile.backend
+    environment:
+      - DB_HOST=db           # Utilise le nom du service db
+      - DB_USER=db_user
+      - DB_PORT=3306         # Port interne MySQL (pas 3360)
+      - DB_PASSWORD=db_user_pass
+      - DB_NAME=app_db
+    ports:
+      - "5101:5000"
+    depends_on:
+      - db
+    restart: always
+    networks:
+      - tissu-net
+
   frontend:
     build:
       context: ../tissu-master
@@ -9,21 +58,8 @@ services:
     depends_on:
       - backend
     restart: always
-
-  backend:
-    build:
-      context: ../tissu-master
-      dockerfile: Dockerfile.backend
-    environment:
-      - DB_HOST=192.168.1.85    # Remplacez par l'IP/hostname réel
-      - DB_USER=root
-      - DB_PORT=5000 
-      - DB_PASSWORD=7C2742Regy8kCC9V
-      - DB_NAME=app_db
-    ports:
-      - "5101:5000"
-    # Supprimez depends_on car la DB est externe
-    restart: always
+    networks:
+      - tissu-net
 
   grafana:
     image: grafana/grafana
@@ -36,6 +72,14 @@ services:
     volumes:
       - grafana_data:/var/lib/grafana
     restart: always
+    networks:
+      - tissu-net
 
 volumes:
-  grafana_data:  # Supprimez db_data inutilisé
+  dbdata:
+  grafana_data:
+
+networks:
+  tissu-net:
+    driver: bridge
+
