@@ -243,7 +243,7 @@ function Boutique() {
 
     try {
       // 2. Ensuite, créer la boutique dans MySQL via l'API backend
-      const response = await fetch("/api/boutiques", {
+      const response = await fetch(`https://${process.env.BACK_END_URL}/api/boutiques`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
