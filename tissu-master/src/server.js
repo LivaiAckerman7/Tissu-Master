@@ -336,8 +336,8 @@ app.get('/tissus/email/:email', async (req, res) => {
   const { email } = req.params;
   try {
     const [results] = await db.query(
-      'SELECT t.* FROM tissu t INNER JOIN boutique b ON t.boutique_id = b.id WHERE b.email = ?',
-      [email]
+      'SELECT t.* FROM tissu t INNER JOIN boutique b ON t.boutique_id = b.id WHERE b.email = ? OR b.proprio = ?',
+      [email, email]
     );
     res.status(200).json(results);
   } catch (err) {
