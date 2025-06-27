@@ -73,12 +73,16 @@ app.post('/boutiques', async (req, res) => {
 app.get('/boutique/email/:email', async (req, res) => {
   const { email } = req.params;
   try {
-    const [results] = await db.query('SELECT id FROM boutique WHERE email = ?', [email]);
+    const [results] = await db.query(
+      'SELECT id FROM boutique WHERE email = ? OR proprio = ?',
+      [email, email]
+    );
     if (results.length === 0) {
-      res.status(404).json({ error: 'Aucune boutique trouvée pour cet utilisateur' });
-    } else {
-      res.status(200).json(results[0]);
+      console.error('Aucune boutique trouvée pour email ou proprio:', email);
+      return res.status(404).json({ error: 'Aucune boutique trouvée pour cet utilisateur' });
     }
+    console.log('Boutique trouvée:', results[0]);
+    res.status(200).json(results[0]);
   } catch (err) {
     console.error('❌ Échec de la récupération de la boutique:', err);
     res.status(500).json({ error: 'Échec de la récupération de la boutique' });
