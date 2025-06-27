@@ -10,14 +10,16 @@ import {
   ListItemIcon,
   ListItemText,
   Container,
-  Box
+  Box,
+  Grid,
+  Paper,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
 import AssessmentIcon from "@mui/icons-material/Assessment";
 import StorefrontIcon from "@mui/icons-material/Storefront";
-
+import { BarChart, LineChart } from "@mui/x-charts";
 import { useNavigate } from "react-router-dom";
 import { Client, Account } from "appwrite";
 import appwriteConfig from "../../config/appwriteConfig";
@@ -31,6 +33,9 @@ const account = new Account(client);
 function StatistiquesAdmin() {
   const [username, setUsername] = useState("");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [stats, setStats] = useState({});
+  const [topTissus, setTopTissus] = useState([]);
+  const [ventesParJour, setVentesParJour] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -48,6 +53,43 @@ function StatistiquesAdmin() {
           console.error("Erreur Appwrite:", err);
           navigate("/login");
         });
+
+      // Récupérer les statistiques globales
+      fetch(`https://${process.env.REACT_APP_BACK_END_URL}/superadmin/stats`)
+        .then((res) => res.json())
+        .then((data) => setStats(data))
+        .catch((err) => console.error("Erreur stats:", err));
+
+      // Récupérer les logs pour les tissus les plus vendus et les ventes par jour
+      fetch(`https://${process.env.REACT_APP_BACK_END_URL}/superadmin/logs?from=now-30d&to=now`)
+        .then((res) => res.json())
+        .then((logs) => {
+          // Calculer les top tissus
+          const tissuMap = {};
+          logs.forEach((log) => {
+            const tissuNom = log.tissu_nom;
+            const quantity = log.quantity;
+            tissuMap[tissuNom] = (tissuMap[tissuNom] || 0) + quantity;
+          });
+          const topTissusData = Object.entries(tissuMap)
+            .map(([nom, total]) => ({ nom, total }))
+            .sort((a, b) => b.total - a.total)
+            .slice(0, 10);
+          setTopTissus(topTissusData);
+
+          // Calculer les ventes par jour
+          const ventesMap = {};
+          logs.forEach((log) => {
+            const date = new Date(log.date).toISOString().split("T")[0];
+            const total = log.quantity * log.price;
+            ventesMap[date] = (ventesMap[date] || 0) + total;
+          });
+          const ventesParJourData = Object.entries(ventesMap)
+            .map(([date, total]) => ({ date, total }))
+            .sort((a, b) => new Date(a.date) - new Date(b.date));
+          setVentesParJour(ventesParJourData);
+        })
+        .catch((err) => console.error("Erreur logs:", err));
     }
   }, [navigate]);
 
@@ -115,16 +157,58 @@ function StatistiquesAdmin() {
           Statistiques des ventes
         </Typography>
 
-        <Box sx={{ mt: 4 }}>
-          <iframe
-            src="https://192.168.1.85:3001/d/e8eb0032-664f-4bc3-9756-793b7e8bfc1d/top-20-tissus-vendus?orgId=1&from=now-6h&to=now&timezone=browser"
-            width="100%"
-            height="800"
-            frameBorder="0"
-            title="Top Tissus"
-            style={{ borderRadius: 8 }}
-          ></iframe>
-        </Box>
+        <Grid container spacing={3}>
+          {/* Statistiques globales */}
+          <Grid item xs={12}>
+            <Paper elevation={3} sx={{ p: 2 }}>
+              <Typography variant="h6">Résumé</Typography>
+              <Grid container spacing={2}>
+                <Grid item xs={3}>
+                  <Typography>Total Boutiques: {stats.total_boutiques || 0}</Typography>
+                </Grid>
+                <Grid item xs={3}>
+                  <Typography>Total Tissus: {stats.total_tissus || 0}</Typography>
+                </Grid>
+                <Grid item xs={3}>
+                  <Typography>Stock Total: {stats.stock_total || 0}</Typography>
+                </Grid>
+                <Grid item xs={3}>
+                  <Typography>Ventes Globales: {stats.ventes_globales || 0} FCFA</Typography>
+                </Grid>
+              </Grid>
+            </Paper>
+          </Grid>
+
+          {/* Top 10 tissus vendus */}
+          {topTissus.length > 0 && (
+            <Grid item xs={12} md={6}>
+              <Paper elevation={3} sx={{ p: 2 }}>
+                <Typography variant="h6">Top 10 Tissus Vendus</Typography>
+                <BarChart
+                  xAxis={[{ scaleType: "band", data: topTissus.map((t) => t.nom) }]}
+                  series={[{ data: topTissus.map((t) => t.total) }]}
+                  width={500}
+                  height={300}
+                />
+              </Paper>
+            </Grid>
+          )}
+
+          {/* Ventes par jour */}
+          {ventesParJour.length > 0 && (
+            <Grid item xs={12} md={6}>
+              <Paper elevation={3} sx={{ p: 2 }}>
+                <Typography variant="h6">Ventes par Jour (30 derniers jours)</Typography>
+                <LineChart
+                  xAxis={[{ data: ventesParJour.map((v) => new Date(v.date)) }]}
+                  series={[{ data: ventesParJour.map((v) => v.total) }]}
+                  width={500}
+                  height={300}
+                />
+              </Paper>
+            </Grid>
+          )}
+        </Grid>
       </Container>
     </div>
   );
